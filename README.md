@@ -1,20 +1,25 @@
 # MailSyncMCP
 
-An MCP server that gives Claude read, search and reply access to every account
-configured in Apple Mail, running entirely on this Mac.
+Search, read and reply to every account in Apple Mail from Claude, without
+handing over a single password.
+
+Works with Gmail, Microsoft 365, iCloud and custom-domain IMAP alike, because it
+reads what Mail has already synced rather than talking to each provider. Runs
+entirely on your Mac. Nothing is uploaded anywhere.
 
 ## Why it works this way
 
-Apple Mail already syncs all five accounts and already holds their credentials in
-the Keychain, refreshing them on its own. This server reads Mail's local store
-and asks Mail to compose. It never sees a password or a token, never stores one,
-and never triggers a re-authentication. Adding a new account means adding it in
-Mail; nothing here needs to change, and it works the same whether the account is
-Gmail, Microsoft 365, or a custom domain over plain IMAP.
+Apple Mail already syncs every account you have and already holds their
+credentials in the Keychain, refreshing them on its own. This server reads Mail's
+local store and asks Mail to compose. It never sees a password or a token, never
+stores one, and never triggers a re-authentication. Adding an account means adding
+it in Mail; nothing here changes.
 
-Going direct to provider APIs would have meant a Google Cloud project, an Azure
-app registration, per-account refresh tokens, and admin consent for the student
-account that a university will usually refuse.
+The alternative, talking to each provider directly, means a Google Cloud project,
+an Azure app registration, and a refresh token per account. Worse, work and
+university accounts are usually locked down so that a third-party OAuth app needs
+administrator consent, which is often simply refused. Reading what Mail has
+already synced sidesteps all of it.
 
 ## Safety
 
@@ -104,11 +109,24 @@ Registering in one does nothing for the other:
 | Claude Code | `~/.claude.json`, top-level `mcpServers` |
 | Claude for Desktop | `~/Library/Application Support/Claude/claude_desktop_config.json` |
 
-Both are registered as `mailsync`. Because the package is installed into its venv
-with `pip install -e .`, neither entry depends on a working directory.
+Add the same entry to whichever you use, pointing at the venv's Python:
 
-A local server like this one runs as a child process on this Mac, so it is only
-available to apps running here. claude.ai in a browser cannot reach it.
+```json
+{
+  "mcpServers": {
+    "mailsync": {
+      "command": "/absolute/path/to/Apple-Mail-Sync-MCP/.venv/bin/python",
+      "args": ["-m", "mailsync"]
+    }
+  }
+}
+```
+
+Because the package is installed into the venv with `pip install -e .`, the entry
+does not depend on a working directory. Quit and reopen the app afterwards.
+
+A local server like this one runs as a child process on your Mac, so it is only
+available to apps running there. claude.ai in a browser cannot reach it.
 
 Each surface starts its own OS process; stdio has no way to share one. That does
 not fork the setup, because both entries run the same installed package and every
@@ -135,7 +153,7 @@ macOS prompts for on first use.
 ## Partial messages
 
 Mail keeps header-only copies of messages it has not fully downloaded: about
-3,400 of 12,800 here. Those stay searchable on sender, subject, date and whatever
+a quarter of them on a typical mailbox. Those stay searchable on sender, subject, date and whatever
 preview text Mail stored. `get_message` takes `fetch_if_partial=True` to ask Mail
 for the full source, which makes it pull the body from the server. That needs
 Mail running, so it is opt-in rather than automatic.

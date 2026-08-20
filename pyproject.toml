@@ -1,9 +1,24 @@
 [project]
 name = "mailsync"
 version = "0.1.0"
-description = "Unified local MCP server for Apple Mail accounts"
+description = "Search and reply to every Apple Mail account from Claude, locally and without credentials"
+readme = "README.md"
 requires-python = ">=3.11"
+license = "MIT"
+authors = [{ name = "Salman Tahir" }]
+keywords = ["mcp", "apple-mail", "macos", "email", "claude"]
+classifiers = [
+    "Environment :: MacOS X",
+    "Intended Audience :: End Users/Desktop",
+    "Operating System :: MacOS :: MacOS X",
+    "Programming Language :: Python :: 3",
+    "Topic :: Communications :: Email",
+]
 dependencies = ["mcp>=2.0"]
+
+[project.urls]
+Homepage = "https://github.com/st-designs/Apple-Mail-Sync-MCP"
+Issues = "https://github.com/st-designs/Apple-Mail-Sync-MCP/issues"
 
 [project.scripts]
 mailsync = "mailsync.server:main"
